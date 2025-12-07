@@ -55,14 +55,14 @@ async def start_sequence(client, message):
     user_id = message.from_user.id
     if user_id not in user_sequences:
         user_sequences[user_id] = []
-        await message.reply_text("✅ Sequence mode started! Send your files now.")
+        await message.reply_text("<blockquote>ғɪʟᴇ sᴇǫᴜᴇɴᴄᴇ ᴍᴏᴅᴇ sᴛᴀʀᴛᴇᴅ! sᴇɴᴅ ʏᴏᴜʀ ғɪʟᴇs ɴᴏᴡ</blockquote>")
 
 # ----------------------- END SEQUENCE -----------------------
 @app.on_message(filters.command("esequence"))
 async def end_sequence(client, message):
     user_id = message.from_user.id
     if user_id not in user_sequences or not user_sequences[user_id]:
-        await message.reply_text("❌ No files in sequence!")
+        await message.reply_text("<blockquote>No files in sequence!</blockquote>")
         return
 
     sorted_files = sorted(user_sequences[user_id], key=lambda x: extract_episode_number(x["filename"]))
@@ -83,7 +83,7 @@ async def end_sequence(client, message):
     )
 
     del user_sequences[user_id]
-    await message.reply_text("✅ All files sequenced!")
+    await message.reply_text("<blockquote>All files sequenced!</blockquote>")
 
 # ----------------------- STORE FILES -----------------------
 @app.on_message(filters.document | filters.video | filters.audio)
@@ -102,15 +102,15 @@ async def store_file(client, message):
             "chat_id": message.chat.id
         })
 
-        await message.reply_text("📂 File added! Use /esequence to end.")
+        await message.reply_text("<blockquote>File added! Use /esequence to end.<blockquote>")
     else:
-        await message.reply_text("❌ Start sequence with /ssequence first.")
+        await message.reply_text("<blockquote>Start sequence with /ssequence first.<blockquote>")
 
 # ----------------------- LEADERBOARD -----------------------
 @app.on_message(filters.command("leaderboard"))
 async def leaderboard(client, message):
     top_users = users_collection.find().sort("files_sequenced", -1).limit(5)
-    leaderboard_text = "🏆 **Top Users**\n\n"
+    leaderboard_text = "<blockquote>🏆 Top Users\n\n</blockquote>"
 
     found = False
     for index, user in enumerate(top_users, start=1):
@@ -126,7 +126,7 @@ async def leaderboard(client, message):
 @app.on_message(filters.command("broadcast") & filters.user(OWNER_ID))
 async def broadcast(client, message):
     if len(message.command) < 2:
-        await message.reply_text("Usage: `/broadcast your message`")
+        await message.reply_text("<blockquote>Usage: `/broadcast your message`</blockquote>")
         return
 
     text = message.text.split(" ", 1)[1]
@@ -146,7 +146,7 @@ async def broadcast(client, message):
 @app.on_message(filters.command("users") & filters.user(OWNER_ID))
 async def get_users(client, message):
     count = users_collection.count_documents({})
-    await message.reply_text(f"📊 Total Users: {count}")
+    await message.reply_text(f"<blockquote>📊 Total Users: {count}</blockquote>")
 
 # ----------------------- CALLBACK -----------------------
 @app.on_callback_query()
@@ -184,3 +184,4 @@ async def cb_handler(client, query: CallbackQuery):
             pass
 
 app.run()
+

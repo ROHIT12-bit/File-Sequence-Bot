@@ -36,8 +36,8 @@ def extract_episode_number(filename):
 async def start_command(client, message):
     buttons = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("Help", callback_data='help'),
-            InlineKeyboardButton("Close", callback_data='close')
+            InlineKeyboardButton("ʜᴇʟᴘ", callback_data='help'),
+            InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data='close')
         ],
         [InlineKeyboardButton("ʙᴏᴛsᴋɪɴɢᴅᴏᴍs", url='https://t.me/BOTSKINGDOMS')]
     ])
@@ -172,10 +172,10 @@ async def cb_handler(client, query: CallbackQuery):
             text=START_MSG.replace("{first}", query.from_user.first_name),
             reply_markup=InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("❓ Help", callback_data="help"),
-                    InlineKeyboardButton("❌ Close", callback_data="close")
+                    InlineKeyboardButton("ʜᴇʟᴘ", callback_data="help"),
+                    InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")
                 ],
-                [InlineKeyboardButton("𝗕𝗼𝘁𝘀𝗞𝗶𝗻𝗴𝗱𝗼𝗺𝘀", url='https://t.me/BOTSKINGDOMS')]
+                [InlineKeyboardButton("ʙᴏᴛsᴋɪɴɢᴅᴏᴍs", url='https://t.me/BOTSKINGDOMS')]
             ])
         )
 
@@ -186,6 +186,7 @@ async def cb_handler(client, query: CallbackQuery):
         except:
             pass
 app.run()
+
 
 
 

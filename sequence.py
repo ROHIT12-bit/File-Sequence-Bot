@@ -90,7 +90,7 @@ def store_file(client, message):
             "Unknown"
         )
         user_sequences[user_id].append({"filename": file_name, "msg_id": message.id, "chat_id": message.chat.id})
-        message.reply_text("📂 ʏᴏᴜᴇ ғɪʟᴇ ʜᴀs ʙᴇᴇɴ ᴀᴅᴅᴇᴅ ᴛᴏ ᴛʜᴇ sᴇǫᴜᴇɴᴄᴇ!")
+        message.reply_text("📂 ʏᴏᴜᴇ ғɪʟᴇ ʜᴀs ʙᴇᴇɴ ᴀᴅᴅᴇᴅ ᴛᴏ ᴛʜᴇ sᴇǫᴜᴇɴᴄᴇ! ᴜsᴇ /esequence ᴛᴏ ᴇɴᴅ!")
     else:
         message.reply_text("❌ ʏᴏᴜ ɴᴇᴇᴅ ᴛᴏ sᴛᴀʀᴛ sᴇǫᴜᴇɴᴄᴇ ᴍᴏᴅᴇ ғɪʀsᴛ ᴜsɪɴɢ /ssequence.")
 
@@ -171,5 +171,6 @@ async def cb_handler(client: app, query: CallbackQuery):
             pass
 
 app.run()
+
 
 

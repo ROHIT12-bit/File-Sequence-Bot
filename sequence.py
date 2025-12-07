@@ -151,6 +151,7 @@ async def get_users(client, message):
 # ----------------------- CALLBACK -----------------------
 @app.on_callback_query()
 async def cb_handler(client, query: CallbackQuery):
+    await query.answer()  # acknowledge the callback
     data = query.data
 
     if data == "help":
@@ -158,8 +159,8 @@ async def cb_handler(client, query: CallbackQuery):
             text=HELP_TXT.format(first=query.from_user.first_name),
             reply_markup=InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("Back", callback_data='start'),
-                    InlineKeyboardButton("Close", callback_data='close')
+                    InlineKeyboardButton("ʙᴀᴄᴋ", callback_data='start'),
+                    InlineKeyboardButton("❌ ᴄʟᴏsᴇ", callback_data='close')
                 ]
             ])
         )
@@ -169,10 +170,10 @@ async def cb_handler(client, query: CallbackQuery):
             text=START_MSG.format(first=query.from_user.first_name),
             reply_markup=InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("Help", callback_data='help'),
-                    InlineKeyboardButton("Close", callback_data='close')
+                    InlineKeyboardButton("❓ ʜᴇʟᴘ", callback_data='help'),
+                    InlineKeyboardButton("❌ ᴄʟᴏsᴇ", callback_data='close')
                 ],
-                [InlineKeyboardButton("𝗕𝗼𝘁𝘀𝗞𝗶𝗻𝗴𝗱𝗼𝗺𝘀", url='https://t.me/BOTSKINGDOMS')]
+                [InlineKeyboardButton("ʙᴏᴛsᴋɪɴɢᴅᴏᴍs", url='https://t.me/BOTSKINGDOMS')]
             ])
         )
 
@@ -182,7 +183,7 @@ async def cb_handler(client, query: CallbackQuery):
             await query.message.reply_to_message.delete()
         except:
             pass
-
 app.run()
+
 
 

@@ -153,7 +153,7 @@ async def get_users(client, message):
 async def cb_handler(client, query: CallbackQuery):
     # Always acknowledge the callback
     await query.answer()
-    mention=query.from_user.mention
+    mention = f'<a href="tg://user?id={query.from_user.id}">{query.from_user.first_name}</a>'
     data = query.data
 
     if data == "help":
@@ -186,6 +186,7 @@ async def cb_handler(client, query: CallbackQuery):
         except:
             pass
 app.run()
+
 
 
 

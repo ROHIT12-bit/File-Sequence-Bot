@@ -1,8 +1,7 @@
 import asyncio
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 import re
-from collections import defaultdict
 from pymongo import MongoClient
 from config import API_HASH, API_ID, BOT_TOKEN, MONGO_URI, START_PIC, START_MSG, HELP_TXT, OWNER_ID
 
@@ -11,158 +10,172 @@ db = mongo_client["sequence_bot"]
 users_collection = db["users_sequence"]
 
 app = Client("sequence_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-user_sequences = {} 
+user_sequences = {}
 
-# Patterns for extracting episode numbers
+# Regex patterns
 patterns = [
-    re.compile(r'\b(?:EP|E)\s*-\s*(\d{1,3})\b', re.IGNORECASE),  # "Ep - 06" format fix
-    re.compile(r'\b(?:EP|E)\s*(\d{1,3})\b', re.IGNORECASE),  # "EP06" or "E 06"
-    re.compile(r'S(\d+)(?:E|EP)(\d+)', re.IGNORECASE),  # "S1E06" / "S01EP06"
-    re.compile(r'S(\d+)\s*(?:E|EP|-\s*EP)\s*(\d+)', re.IGNORECASE),  # "S 1 Ep 06"
-    re.compile(r'(?:[([<{]?\s*(?:E|EP)\s*(\d+)\s*[)\]>}]?)', re.IGNORECASE),  # "E(06)"
-    re.compile(r'(?:EP|E)?\s*[-]?\s*(\d{1,3})', re.IGNORECASE),  # "E - 06" / "- 06"
-    re.compile(r'S(\d+)[^\d]*(\d+)', re.IGNORECASE),  # "S1 - 06"
-    re.compile(r'(\d+)')  # Simple fallback (last resort)
+    re.compile(r'\b(?:EP|E)\s*-\s*(\d{1,3})\b', re.IGNORECASE),
+    re.compile(r'\b(?:EP|E)\s*(\d{1,3})\b', re.IGNORECASE),
+    re.compile(r'S(\d+)(?:E|EP)(\d+)', re.IGNORECASE),
+    re.compile(r'S(\d+)\s*(?:E|EP|-\s*EP)\s*(\d+)', re.IGNORECASE),
+    re.compile(r'(?:[([<{]?\s*(?:E|EP)\s*(\d+)\s*[)\]>}]?)', re.IGNORECASE),
+    re.compile(r'(?:EP|E)?\s*[-]?\s*(\d{1,3})', re.IGNORECASE),
+    re.compile(r'S(\d+)[^\d]*(\d+)', re.IGNORECASE),
+    re.compile(r'(\d+)')
 ]
+
 def extract_episode_number(filename):
     for pattern in patterns:
         match = pattern.search(filename)
         if match:
             return int(match.groups()[-1])
-    return float('inf')  
+    return float('inf')
 
+# ----------------------- START COMMAND -----------------------
 @app.on_message(filters.command("start"))
-def start_command(client, message):
+async def start_command(client, message):
     buttons = InlineKeyboardMarkup([
         [
             InlineKeyboardButton("Help", callback_data='help'),
             InlineKeyboardButton("Close", callback_data='close')
         ],
-        [
-            InlineKeyboardButton("ʙᴏᴛsᴋɪɴɢᴅᴏᴍs", url='https://t.me/BOTSKINGDOMS')
-        ]
+        [InlineKeyboardButton("ʙᴏᴛsᴋɪɴɢᴅᴏᴍs", url='https://t.me/BOTSKINGDOMS')]
     ])
-    
-    client.send_photo(
+
+    await client.send_photo(
         chat_id=message.chat.id,
         photo=START_PIC,
         caption=START_MSG,
         reply_markup=buttons,
     )
 
+# ----------------------- START SEQUENCE -----------------------
 @app.on_message(filters.command("ssequence"))
-def start_sequence(client, message):
+async def start_sequence(client, message):
     user_id = message.from_user.id
-    if user_id not in user_sequences: 
+    if user_id not in user_sequences:
         user_sequences[user_id] = []
-        message.reply_text("✅ sᴇǫᴜᴇɴᴄᴇ ᴍᴏᴅᴇ sᴛᴀʀᴛᴇᴅ! sᴇɴᴅ ʏᴏᴜʀ ғɪʟᴇs noᴡ.")
+        await message.reply_text("✅ Sequence mode started! Send your files now.")
 
+# ----------------------- END SEQUENCE -----------------------
 @app.on_message(filters.command("esequence"))
 async def end_sequence(client, message):
     user_id = message.from_user.id
-    if user_id not in user_sequences or not user_sequences[user_id]: 
-        await message.reply_text("❌ ɴᴏ ғɪʟᴇs ɪɴ sᴇǫᴜᴇɴᴄᴇ!")
+    if user_id not in user_sequences or not user_sequences[user_id]:
+        await message.reply_text("❌ No files in sequence!")
         return
-    
+
     sorted_files = sorted(user_sequences[user_id], key=lambda x: extract_episode_number(x["filename"]))
-    
+
     for file in sorted_files:
-        await client.copy_message(message.chat.id, from_chat_id=file["chat_id"], message_id=file["msg_id"])
-        await asyncio.sleep(0.1)  # 500 milliseconds delay (adjust if needed)
+        await client.copy_message(
+            message.chat.id,
+            from_chat_id=file["chat_id"],
+            message_id=file["msg_id"]
+        )
+        await asyncio.sleep(0.1)
 
     users_collection.update_one(
         {"user_id": user_id},
-        {"$inc": {"files_sequenced": len(user_sequences[user_id])}, "$set": {"username": message.from_user.first_name}},
+        {"$inc": {"files_sequenced": len(user_sequences[user_id])},
+         "$set": {"username": message.from_user.first_name}},
         upsert=True
     )
 
-    del user_sequences[user_id] 
-    await message.reply_text("✅ ᴀʟʟ ғɪʟᴇs ʜᴀᴠᴇ ʙᴇᴇɴ sᴇǫᴜᴇɴᴄᴇᴅ!")
+    del user_sequences[user_id]
+    await message.reply_text("✅ All files sequenced!")
 
+# ----------------------- STORE FILES -----------------------
 @app.on_message(filters.document | filters.video | filters.audio)
-def store_file(client, message):
+async def store_file(client, message):
     user_id = message.from_user.id
-    if user_id in user_sequences: 
+    if user_id in user_sequences:
         file_name = (
             message.document.file_name if message.document else
             message.video.file_name if message.video else
-            message.audio.file_name if message.audio else
-            "Unknown"
+            message.audio.file_name if message.audio else "Unknown"
         )
-        user_sequences[user_id].append({"filename": file_name, "msg_id": message.id, "chat_id": message.chat.id})
-        message.reply_text("📂 ʏᴏᴜᴇ ғɪʟᴇ ʜᴀs ʙᴇᴇɴ ᴀᴅᴅᴇᴅ ᴛᴏ ᴛʜᴇ sᴇǫᴜᴇɴᴄᴇ! ᴜsᴇ /esequence ᴛᴏ ᴇɴᴅ!")
-    else:
-        message.reply_text("❌ ʏᴏᴜ ɴᴇᴇᴅ ᴛᴏ sᴛᴀʀᴛ sᴇǫᴜᴇɴᴄᴇ ᴍᴏᴅᴇ ғɪʀsᴛ ᴜsɪɴɢ /ssequence.")
 
+        user_sequences[user_id].append({
+            "filename": file_name,
+            "msg_id": message.id,
+            "chat_id": message.chat.id
+        })
+
+        await message.reply_text("📂 File added! Use /esequence to end.")
+    else:
+        await message.reply_text("❌ Start sequence with /ssequence first.")
+
+# ----------------------- LEADERBOARD -----------------------
 @app.on_message(filters.command("leaderboard"))
 async def leaderboard(client, message):
-    top_users = users_collection.find().sort("files_sequenced", -1).limit(5) 
-    leaderboard_text = "ʏᴏ ʜᴇʀᴇ ᴛʜᴇ ᴛᴏᴘ ᴜsᴇʀs\n\n"
+    top_users = users_collection.find().sort("files_sequenced", -1).limit(5)
+    leaderboard_text = "🏆 **Top Users**\n\n"
 
+    found = False
     for index, user in enumerate(top_users, start=1):
+        found = True
         leaderboard_text += f"**{index}. {user['username']}** - {user['files_sequenced']} files\n"
 
-    if not leaderboard_text.strip():
+    if not found:
         leaderboard_text = "No data available!"
 
     await message.reply_text(leaderboard_text)
 
-# /broadcast Command
+# ----------------------- BROADCAST -----------------------
 @app.on_message(filters.command("broadcast") & filters.user(OWNER_ID))
-def broadcast(client, message):
+async def broadcast(client, message):
     if len(message.command) < 2:
-        message.reply_text("**Usage:** `/broadcast Your message here`")
+        await message.reply_text("Usage: `/broadcast your message`")
         return
 
-    broadcast_text = message.text.split(" ", 1)[1]
+    text = message.text.split(" ", 1)[1]
     users = users_collection.find({}, {"user_id": 1})
-    
+
     count = 0
     for user in users:
         try:
-            client.send_message(user["user_id"], broadcast_text)
+            await client.send_message(user["user_id"], text)
             count += 1
         except:
-            pass  
+            pass
 
-    message.reply_text(f"✅ Broadcast sent to {count} users.")
+    await message.reply_text(f"✅ Broadcast sent to {count} users.")
 
-# /users Command 
+# ----------------------- USERS -----------------------
 @app.on_message(filters.command("users") & filters.user(OWNER_ID))
-def get_users(client, message):
-    user_count = users_collection.count_documents({})
-    message.reply_text(f"📊 **Total Users:** {user_count}")
+async def get_users(client, message):
+    count = users_collection.count_documents({})
+    await message.reply_text(f"📊 Total Users: {count}")
 
+# ----------------------- CALLBACK -----------------------
 @app.on_callback_query()
-async def cb_handler(client: app, query: CallbackQuery):
+async def cb_handler(client, query: CallbackQuery):
     data = query.data
+
     if data == "help":
         await query.message.edit_text(
             text=HELP_TXT.format(first=query.from_user.first_name),
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(
+            reply_markup=InlineKeyboardMarkup([
                 [
-                    [
-                        InlineKeyboardButton('Back', callback_data='start'),
-                        InlineKeyboardButton("Close", callback_data='close')
-                    ]
+                    InlineKeyboardButton("Back", callback_data='start'),
+                    InlineKeyboardButton("Close", callback_data='close')
                 ]
-            )
+            ])
         )
+
     elif data == "start":
         await query.message.edit_text(
             text=START_MSG.format(first=query.from_user.first_name),
-            disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton("Help", callback_data='help'),
                     InlineKeyboardButton("Close", callback_data='close')
                 ],
-                [
-                    InlineKeyboardButton("𝗕𝗼𝘁𝘀𝗞𝗶𝗻𝗴𝗱𝗼𝗺𝘀", url='https://t.me/BOTSKINGDOMS')
-                ]
+                [InlineKeyboardButton("𝗕𝗼𝘁𝘀𝗞𝗶𝗻𝗴𝗱𝗼𝗺𝘀", url='https://t.me/BOTSKINGDOMS')]
             ])
         )
+
     elif data == "close":
         await query.message.delete()
         try:
@@ -171,6 +184,3 @@ async def cb_handler(client: app, query: CallbackQuery):
             pass
 
 app.run()
-
-
-

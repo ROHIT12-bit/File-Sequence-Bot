@@ -10,8 +10,9 @@ HELP_TXT = """<blockquote><b>🤖 ᴍʏ ɴᴀᴍᴇ: ғɪʟᴇ sᴇǫᴜᴇɴᴄ
 <b>◈ ᴏᴡɴᴇʀ:</b> <a href="https://t.me/Rioshin"><b>Cʟɪᴄᴋ ʜᴇʀᴇ</b></a><br>
 <b>◈ ʙᴏᴛs ᴄʜᴀɴɴᴇʟ:</b> <a href="https://t.me/botskingdoms"><b>Cʟɪᴄᴋ ʜᴇʀᴇ</b></a><br>
 <b>◈ ᴍᴀɴɢᴀ ᴄʜᴀɴɴᴇʟ:</b> <a href="https://t.me/astroMangas"><b>Cʟɪᴄᴋ ʜᴇʀᴇ</b></a><br>
-<b>◈ ᴅᴇᴠᴇʟᴏᴘᴇʀ:</b> <a href="https://t.me/Rioshin"><b>Cʟɪᴄᴋ ʜᴇʀᴇ</b></a>"</blockquote>""
+<b>◈ ᴅᴇᴠᴇʟᴏᴘᴇʀ:</b> <a href="https://t.me/Rioshin"><b>Cʟɪᴄᴋ ʜᴇʀᴇ</b></a>"</blockquote>"""
 OWNER_ID = 8367080346
+
 
 
 

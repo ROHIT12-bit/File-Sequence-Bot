@@ -39,7 +39,7 @@ def start_command(client, message):
             InlineKeyboardButton("Close", callback_data='close')
         ],
         [
-            InlineKeyboardButton("OWNER", url='https://t.me/Its_Sahil_Ansari')
+            InlineKeyboardButton("ʙᴏᴛsᴋɪɴɢᴅᴏᴍs", url='https://t.me/BOTSKINGDOMS')
         ]
     ])
     
@@ -50,18 +50,18 @@ def start_command(client, message):
         reply_markup=buttons,
     )
 
-@app.on_message(filters.command("startsequence"))
+@app.on_message(filters.command("ssequence"))
 def start_sequence(client, message):
     user_id = message.from_user.id
     if user_id not in user_sequences: 
         user_sequences[user_id] = []
-        message.reply_text("✅ Sequence mode started! Send your files now.")
+        message.reply_text("✅ sᴇǫᴜᴇɴᴄᴇ ᴍᴏᴅᴇ sᴛᴀʀᴛᴇᴅ! sᴇɴᴅ ʏᴏᴜʀ ғɪʟᴇs noᴡ.")
 
-@app.on_message(filters.command("endsequence"))
+@app.on_message(filters.command("esequence"))
 async def end_sequence(client, message):
     user_id = message.from_user.id
     if user_id not in user_sequences or not user_sequences[user_id]: 
-        await message.reply_text("❌ No files in sequence!")
+        await message.reply_text("❌ ɴᴏ ғɪʟᴇs ɪɴ sᴇǫᴜᴇɴᴄᴇ!")
         return
     
     sorted_files = sorted(user_sequences[user_id], key=lambda x: extract_episode_number(x["filename"]))
@@ -77,7 +77,7 @@ async def end_sequence(client, message):
     )
 
     del user_sequences[user_id] 
-    await message.reply_text("✅ All files have been sequenced!")
+    await message.reply_text("✅ ᴀʟʟ ғɪʟᴇs ʜᴀᴠᴇ ʙᴇᴇɴ sᴇǫᴜᴇɴᴄᴇᴅ!")
 
 @app.on_message(filters.document | filters.video | filters.audio)
 def store_file(client, message):
@@ -90,14 +90,14 @@ def store_file(client, message):
             "Unknown"
         )
         user_sequences[user_id].append({"filename": file_name, "msg_id": message.id, "chat_id": message.chat.id})
-        message.reply_text("📂 Your file has been added to the sequence!")
+        message.reply_text("📂 ʏᴏᴜᴇ ғɪʟᴇ ʜᴀs ʙᴇᴇɴ ᴀᴅᴅᴇᴅ ᴛᴏ ᴛʜᴇ sᴇǫᴜᴇɴᴄᴇ!")
     else:
-        message.reply_text("❌ You need to start sequence mode first using /startsequence.")
+        message.reply_text("❌ ʏᴏᴜ ɴᴇᴇᴅ ᴛᴏ sᴛᴀʀᴛ sᴇǫᴜᴇɴᴄᴇ ᴍᴏᴅᴇ ғɪʀsᴛ ᴜsɪɴɢ /ssequence.")
 
 @app.on_message(filters.command("leaderboard"))
 async def leaderboard(client, message):
     top_users = users_collection.find().sort("files_sequenced", -1).limit(5) 
-    leaderboard_text = "**🏆 Top Users 🏆**\n\n"
+    leaderboard_text = "ʏᴏ ʜᴇʀᴇ ᴛʜᴇ ᴛᴏᴘ ᴜsᴇʀs\n\n"
 
     for index, user in enumerate(top_users, start=1):
         leaderboard_text += f"**{index}. {user['username']}** - {user['files_sequenced']} files\n"
@@ -171,4 +171,5 @@ async def cb_handler(client: app, query: CallbackQuery):
             pass
 
 app.run()
+
 

@@ -159,7 +159,7 @@ async def cb_handler(client: app, query: CallbackQuery):
                     InlineKeyboardButton("Close", callback_data='close')
                 ],
                 [
-                    InlineKeyboardButton("OWNER", url='https://t.me/Its_Sahil_Ansari')
+                    InlineKeyboardButton("𝗕𝗼𝘁𝘀𝗞𝗶𝗻𝗴𝗱𝗼𝗺𝘀", url='https://t.me/BOTSKINGDOMS')
                 ]
             ])
         )
@@ -171,3 +171,4 @@ async def cb_handler(client: app, query: CallbackQuery):
             pass
 
 app.run()
+

@@ -36,8 +36,8 @@ def extract_episode_number(filename):
 async def start_command(client, message):
     buttons = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("ʜᴇʟᴘ", callback_data='help'),
-            InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data='close')
+            InlineKeyboardButton("Help", callback_data='help'),
+            InlineKeyboardButton("Close", callback_data='close')
         ],
         [InlineKeyboardButton("ʙᴏᴛsᴋɪɴɢᴅᴏᴍs", url='https://t.me/BOTSKINGDOMS')]
     ])
@@ -151,29 +151,27 @@ async def get_users(client, message):
 # ----------------------- CALLBACK -----------------------
 @app.on_callback_query()
 async def cb_handler(client, query: CallbackQuery):
-    # Always acknowledge the callback
-    await query.answer()
-    mention = f'<a href="tg://user?id={query.from_user.id}">{query.from_user.first_name}</a>'
+    await query.answer()  # acknowledge the callback
     data = query.data
 
     if data == "help":
         await query.message.edit_text(
-            text=HELP_TXT.replace("{first}", query.from_user.first_name),
+            text=HELP_TXT.format(first=query.from_user.first_name),
             reply_markup=InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("🔙 Back", callback_data="start_menu"),
-                    InlineKeyboardButton("❌ Close", callback_data="close")
+                    InlineKeyboardButton("ʙᴀᴄᴋ", callback_data='start'),
+                    InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data='close')
                 ]
             ])
         )
 
-    elif data == "start_menu":
+    elif data == "start":
         await query.message.edit_text(
-            text=START_MSG.replace("{first}", query.from_user.first_name),
+            text=START_MSG.format(first=query.from_user.first_name),
             reply_markup=InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("ʜᴇʟᴘ", callback_data="help"),
-                    InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")
+                    InlineKeyboardButton("ʜᴇʟᴘ", callback_data='help'),
+                    InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data='close')
                 ],
                 [InlineKeyboardButton("ʙᴏᴛsᴋɪɴɢᴅᴏᴍs", url='https://t.me/BOTSKINGDOMS')]
             ])
@@ -186,9 +184,5 @@ async def cb_handler(client, query: CallbackQuery):
         except:
             pass
 app.run()
-
-
-
-
 
 

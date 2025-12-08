@@ -196,8 +196,8 @@ async def leader_menu_cb(client, query):
     text = """<b>🏆 Leaderboard</b>
 """
     for u in data:
-        text += f"<b>{u.get('username','User')}</b> — {u.get('files_sequenced',0)} files
-"
+        text += f"""<b>{u.get('username','User')}</b> — {u.get('files_sequenced',0)} files
+"""
     await query.message.edit_text(text, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="back_menu")]]))
     await query.answer()
 
@@ -227,6 +227,7 @@ async def back_main_menu(client, query):
 # ----------------------- RUN -----------------------
 if __name__ == "__main__":
     app.run()
+
 
 
 

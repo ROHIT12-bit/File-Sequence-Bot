@@ -1,6 +1,6 @@
 API_ID = 26047636 
 API_HASH = "d8b1ed69ae1f937c5dd4d3cc8c8de440" 
-BOT_TOKEN = "8539037971:AAGaWpcn1IpKBnpUIqVeircwhLnJTmwGEco"
+BOT_TOKEN = "8400380694:AAEEXOcsF0Cx-nR4KE8kErYxuip-sWKD6cM"
 MONGO_URI = "mongodb+srv://rohitreddyathuru:R6Co7MOjTYQOAqcq@cluster0.xrwjpl9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 START_PIC = "https://i.rj1.dev/ADADe.png" 
 START_MSG = """<blockquote> Hello Dude!I am Sequence Bot 🤖</blockquote>
@@ -12,6 +12,7 @@ HELP_TXT = """<blockquote><b>🤖 ᴍʏ ɴᴀᴍᴇ: ғɪʟᴇ sᴇǫᴜᴇɴᴄ
 <b>◈ ᴍᴀɴɢᴀ ᴄʜᴀɴɴᴇʟ:</b> <a href="https://t.me/astroMangas"><b>Cʟɪᴄᴋ ʜᴇʀᴇ</b></a><br>
 <b>◈ ᴅᴇᴠᴇʟᴏᴘᴇʀ:</b> <a href="https://t.me/Rioshin"><b>Cʟɪᴄᴋ ʜᴇʀᴇ</b></a>"</blockquote>"""
 OWNER_ID = 8367080346
+
 
 
 

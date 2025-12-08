@@ -212,9 +212,10 @@ async def cb_handler(client, query: CallbackQuery):
 # ---------------- RUN BOT ----------------
 async def main():
     await app.start()
-    await app.send_message(OWNER_ID, "⚡ ʙᴏᴛ ʜᴀs ʀᴇsᴛᴀʀᴛᴇᴅ!")
+    await app.send_message(OWNER_ID, "<blockquote>⚡ ʙᴏᴛ ʜᴀs ʀᴇsᴛᴀʀᴛᴇᴅ!</blockquote>")
     print("Bot started successfully!")
     await idle()
 
 asyncio.run(main())
+
 

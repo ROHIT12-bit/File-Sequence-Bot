@@ -171,8 +171,7 @@ async def seq_menu_cb(client, query):
 @app.on_callback_query(filters.regex("^broadcast_menu$"))
 async def broadcast_menu_cb(client, query):
     await query.message.edit_text(
-        "<b>Broadcast Panel</b>
-Send message to all users.",
+        """<b>Broadcast Panel</b>/nSend message to all users.""",
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("Start Broadcast", callback_data="broadcast_start")],
             [InlineKeyboardButton("🔙 Back", callback_data="back_menu")]
@@ -228,4 +227,5 @@ async def back_main_menu(client, query):
 # ----------------------- RUN -----------------------
 if __name__ == "__main__":
     app.run()
+
 

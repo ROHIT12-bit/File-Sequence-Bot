@@ -1,1 +1,1 @@
-worker: python3 sequence.py
+web: python3 sequence.py

@@ -151,45 +151,60 @@ async def get_users(client, message):
 # ----------------------- CALLBACK -----------------------
 @app.on_callback_query()
 async def cb_handler(client, query: CallbackQuery):
-    # Always acknowledge the callback
-    await query.answer()
-    mention = f'<a href="tg://user?id={query.from_user.id}">{query.from_user.first_name}</a>'
+
     data = query.data
+    old_text = query.message.text or ""
 
+    async def safe_edit(new_text, kb):
+        if old_text.strip() != new_text.strip():
+            try:
+                await query.message.edit_text(
+                    text=new_text,
+                    reply_markup=kb
+                )
+            except Exception as e:
+                print("Edit error:", e)
+        else:
+            await query.answer("Already open!", show_alert=False)
+
+    # ---------------- HELP ----------------
     if data == "help":
-        await query.message.edit_text(
-            text=HELP_TXT.replace("{first}", query.from_user.first_name),
-            reply_markup=InlineKeyboardMarkup([
-                [
-                    InlineKeyboardButton("🔙 Back", callback_data="start_menu"),
-                    InlineKeyboardButton("❌ Close", callback_data="close")
-                ]
-            ])
-        )
+        new_text = HELP_TXT.replace("{first}", query.from_user.first_name)
 
+        kb = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("ʙᴀᴄᴋ", callback_data="start_menu"),
+                InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")
+            ]
+        ])
+
+        await safe_edit(new_text, kb)
+
+    # ---------------- START MENU ----------------
     elif data == "start_menu":
-        await query.message.edit_text(
-            text=START_MSG.replace("{first}", query.from_user.first_name),
-            reply_markup=InlineKeyboardMarkup([
-                [
-                    InlineKeyboardButton("ʜᴇʟᴘ", callback_data="help"),
-                    InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")
-                ],
-                [InlineKeyboardButton("ʙᴏᴛsᴋɪɴɢᴅᴏᴍs", url='https://t.me/BOTSKINGDOMS')]
-            ])
-        )
+        new_text = START_MSG.replace("{first}", query.from_user.first_name)
 
+        kb = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("ʜᴇʟᴘ", callback_data="help"),
+                InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")
+            ],
+            [InlineKeyboardButton("ʙᴏᴛsᴋɪɴɢᴅᴏᴍs", url='https://t.me/BOTSKINGDOMS')]
+        ])
+
+        await safe_edit(new_text, kb)
+
+    # ---------------- CLOSE ----------------
     elif data == "close":
-        await query.message.delete()
         try:
-            await query.message.reply_to_message.delete()
+            await query.message.delete()
         except:
             pass
-app.run()
+        try:
+            if query.message.reply_to_message:
+                await query.message.reply_to_message.delete()
+        except:
+            pass
 
-
-
-
-
-
-
+    # Always answer callback at end
+    await query.answer()

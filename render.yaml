@@ -1,0 +1,9 @@
+services:
+  - type: worker
+    name: sequence-bot
+    env: python
+    plan: starter
+    autoDeploy: true
+
+    buildCommand: pip install -r requirements.txt
+    startCommand: python sequence.py

@@ -4,6 +4,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQ
 import re
 from pymongo import MongoClient
 from config import API_HASH, API_ID, BOT_TOKEN, MONGO_URI, START_PIC, START_MSG, HELP_TXT, OWNER_ID
+from pyrogram import idle
 
 mongo_client = MongoClient(MONGO_URI)
 db = mongo_client["sequence_bot"]
@@ -213,6 +214,7 @@ async def main():
     await app.start()
     await app.send_message(OWNER_ID, "⚡ ʙᴏᴛ ʜᴀs ʀᴇsᴛᴀʀᴛᴇᴅ!")
     print("Bot started successfully!")
-    await app.idle()
+    await idle()
 
 asyncio.run(main())
+

@@ -208,3 +208,11 @@ async def cb_handler(client, query: CallbackQuery):
 
     # Always answer callback at end
     await query.answer()
+# ---------------- RUN BOT ----------------
+async def main():
+    await app.start()
+    await app.send_message(OWNER_ID, "⚡ ʙᴏᴛ ʜᴀs ʀᴇsᴛᴀʀᴛᴇᴅ!")
+    print("Bot started successfully!")
+    await app.idle()
+
+asyncio.run(main())

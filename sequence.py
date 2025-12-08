@@ -159,8 +159,7 @@ async def handle_fsub_add(client, message):
 @app.on_callback_query(filters.regex("^seq_menu$"))
 async def seq_menu_cb(client, query):
     await query.message.edit_text(
-        "<b>Sequence Mode</b>
-Choose an option:",
+        """<b>Sequence Mode</b>/nChoose an option:""",
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("Start Sequence", callback_data="seq_start")],
             [InlineKeyboardButton("End Sequence", callback_data="seq_end")],
@@ -229,3 +228,4 @@ async def back_main_menu(client, query):
 # ----------------------- RUN -----------------------
 if __name__ == "__main__":
     app.run()
+

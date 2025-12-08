@@ -1,10 +1,17 @@
 import asyncio
+import logging
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 import re
 from pymongo import MongoClient
 from config import API_HASH, API_ID, BOT_TOKEN, MONGO_URI, START_PIC, START_MSG, HELP_TXT, OWNER_ID
 from pyrogram import idle
+# ---------------- LOGGING ----------------
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
 
 mongo_client = MongoClient(MONGO_URI)
 db = mongo_client["sequence_bot"]
@@ -217,5 +224,6 @@ async def main():
     await idle()
 
 asyncio.run(main())
+
 
 

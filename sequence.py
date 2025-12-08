@@ -1,31 +1,18 @@
 import asyncio
-import threading
-from flask import Flask
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 import re
 from pymongo import MongoClient
 from config import API_HASH, API_ID, BOT_TOKEN, MONGO_URI, START_PIC, START_MSG, HELP_TXT, OWNER_ID
 
+# ----------------------- MONGO -----------------------
 mongo_client = MongoClient(MONGO_URI)
 db = mongo_client["sequence_bot"]
 users_collection = db["users_sequence"]
 
+# ----------------------- BOT -----------------------
 app = Client("sequence_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 user_sequences = {}
-
-# ----------------------- FLASK KEEP-ALIVE -----------------------
-flask_app = Flask(__name__)
-
-@flask_app.route("/")
-def home():
-    return "Sequence Bot running on Render!"
-
-def run_flask():
-    port = int(os.environ.get("PORT", 10000))
-    flask_app.run(host="0.0.0.0", port=port)
-
-
 
 # ----------------------- EPISODE REGEX -----------------------
 patterns = [
@@ -46,7 +33,7 @@ def extract_episode_number(filename):
             return int(match.groups()[-1])
     return float('inf')
 
-# ----------------------- START COMMAND -----------------------
+# ----------------------- COMMANDS -----------------------
 @app.on_message(filters.command("start"))
 async def start_command(client, message):
     buttons = InlineKeyboardMarkup([
@@ -64,14 +51,12 @@ async def start_command(client, message):
         reply_markup=buttons,
     )
 
-# ----------------------- SEQUENCE START -----------------------
 @app.on_message(filters.command("ssequence"))
 async def start_sequence(client, message):
     user_id = message.from_user.id
     user_sequences[user_id] = []
     await message.reply_text("<blockquote>ғɪʟᴇ sᴇǫᴜᴇɴᴄᴇ ᴍᴏᴅᴇ ᴏɴ! sᴇɴᴅ ғɪʟᴇs ɴᴏᴡ.</blockquote>")
 
-# ----------------------- SEQUENCE END -----------------------
 @app.on_message(filters.command("esequence"))
 async def end_sequence(client, message):
     user_id = message.from_user.id
@@ -98,7 +83,6 @@ async def end_sequence(client, message):
     del user_sequences[user_id]
     await message.reply_text("<blockquote>ᴅᴏɴᴇ! ᴀʟʟ ғɪʟᴇs sᴇǫᴜᴇɴᴄᴇᴅ ✔️</blockquote>")
 
-# ----------------------- FILE STORAGE -----------------------
 @app.on_message(filters.document | filters.video | filters.audio)
 async def store_file(client, message):
     user_id = message.from_user.id
@@ -148,13 +132,6 @@ async def cb_handler(client, query: CallbackQuery):
     elif data == "close":
         await query.message.delete()
 
-
-# ----------------------- START BOTH BOT + FLASK -----------------------
-def start():
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.start()
-    app.run()
-
+# ----------------------- START BOT -----------------------
 if __name__ == "__main__":
-    start()
-
+    app.run()

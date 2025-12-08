@@ -1,23 +1,31 @@
-# webserver.py
+# 1. Imports
 import os
+import asyncio
+import logging
+from pyrogram import Client, filters, idle
 from flask import Flask
-import threading
-import subprocess
 
-app = Flask(__name__)
+# 2. Config & Bot setup
+from config import API_HASH, API_ID, BOT_TOKEN
+app_bot = Client("sequence_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+web = Flask(__name__)
 
-@app.route("/")
-def index():
+# 3. Handlers (start, sequence, store files, leaderboard, callbacks...)
+# ... your full sequence bot code goes here ...
+
+# 4. Flask route
+@web.route("/")
+def home():
     return "Bot is running!"
 
-# Use Render-assigned PORT, fallback to 10000
-port = int(os.environ.get("PORT", 10000))
+# 5. Async main to start bot
+async def main():
+    await app_bot.start()
+    logging.info("Bot started")
+    await idle()  # keeps Pyrogram alive
 
-def run_server():
-    app.run(host="0.0.0.0", port=port)
-
-# Start the web server in a separate thread
-threading.Thread(target=run_server).start()
-
-# Run your existing bot script as a subprocess
-subprocess.run(["python3", "sequence.py"])
+# 6. Run Flask and bot
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    loop.create_task(main())
+    web.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))

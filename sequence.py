@@ -193,8 +193,8 @@ async def users_menu_cb(client, query):
 @app.on_callback_query(filters.regex("^leader_menu$"))
 async def leader_menu_cb(client, query):
     data = users_collection.find().sort("files_sequenced", -1)
-    text = "<b>🏆 Leaderboard</b>
-"
+    text = """<b>🏆 Leaderboard</b>
+"""
     for u in data:
         text += f"<b>{u.get('username','User')}</b> — {u.get('files_sequenced',0)} files
 "
@@ -227,5 +227,6 @@ async def back_main_menu(client, query):
 # ----------------------- RUN -----------------------
 if __name__ == "__main__":
     app.run()
+
 
 

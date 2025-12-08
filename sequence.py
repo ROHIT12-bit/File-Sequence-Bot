@@ -1,4 +1,6 @@
 import asyncio
+import threading
+from flask import Flask
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 import re
@@ -12,7 +14,20 @@ users_collection = db["users_sequence"]
 app = Client("sequence_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 user_sequences = {}
 
-# Regex patterns
+# ----------------------- FLASK KEEP-ALIVE -----------------------
+flask_app = Flask(__name__)
+
+@flask_app.route("/")
+def home():
+    return "Sequence Bot running on Render!"
+
+def run_flask():
+    port = int(os.environ.get("PORT", 10000))
+    flask_app.run(host="0.0.0.0", port=port)
+
+
+
+# ----------------------- EPISODE REGEX -----------------------
 patterns = [
     re.compile(r'\b(?:EP|E)\s*-\s*(\d{1,3})\b', re.IGNORECASE),
     re.compile(r'\b(?:EP|E)\s*(\d{1,3})\b', re.IGNORECASE),
@@ -49,21 +64,19 @@ async def start_command(client, message):
         reply_markup=buttons,
     )
 
-# ----------------------- START SEQUENCE -----------------------
+# ----------------------- SEQUENCE START -----------------------
 @app.on_message(filters.command("ssequence"))
 async def start_sequence(client, message):
     user_id = message.from_user.id
-    if user_id not in user_sequences:
-        user_sequences[user_id] = []
-        await message.reply_text("<blockquote>ғɪʟᴇ sᴇǫᴜᴇɴᴄᴇ ᴍᴏᴅᴇ sᴛᴀʀᴛᴇᴅ! sᴇɴᴅ ʏᴏᴜʀ ғɪʟᴇs ɴᴏᴡ</blockquote>")
+    user_sequences[user_id] = []
+    await message.reply_text("<blockquote>ғɪʟᴇ sᴇǫᴜᴇɴᴄᴇ ᴍᴏᴅᴇ ᴏɴ! sᴇɴᴅ ғɪʟᴇs ɴᴏᴡ.</blockquote>")
 
-# ----------------------- END SEQUENCE -----------------------
+# ----------------------- SEQUENCE END -----------------------
 @app.on_message(filters.command("esequence"))
 async def end_sequence(client, message):
     user_id = message.from_user.id
     if user_id not in user_sequences or not user_sequences[user_id]:
-        await message.reply_text("<blockquote>Nᴏ ғɪʟᴇs ɪɴ sᴇǫᴜᴇɴᴄᴇ!</blockquote>")
-        return
+        return await message.reply_text("<blockquote>Nᴏ ғɪʟᴇs ғᴏᴜɴᴅ!</blockquote>")
 
     sorted_files = sorted(user_sequences[user_id], key=lambda x: extract_episode_number(x["filename"]))
 
@@ -73,7 +86,7 @@ async def end_sequence(client, message):
             from_chat_id=file["chat_id"],
             message_id=file["msg_id"]
         )
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.08)
 
     users_collection.update_one(
         {"user_id": user_id},
@@ -83,109 +96,64 @@ async def end_sequence(client, message):
     )
 
     del user_sequences[user_id]
-    await message.reply_text("<blockquote>ᴀʟʟ ғɪʟᴇs sᴇǫᴜᴇɴᴄᴇᴅ!</blockquote>")
+    await message.reply_text("<blockquote>ᴅᴏɴᴇ! ᴀʟʟ ғɪʟᴇs sᴇǫᴜᴇɴᴄᴇᴅ ✔️</blockquote>")
 
-# ----------------------- STORE FILES -----------------------
+# ----------------------- FILE STORAGE -----------------------
 @app.on_message(filters.document | filters.video | filters.audio)
 async def store_file(client, message):
     user_id = message.from_user.id
-    if user_id in user_sequences:
-        file_name = (
-            message.document.file_name if message.document else
-            message.video.file_name if message.video else
-            message.audio.file_name if message.audio else "Unknown"
-        )
 
-        user_sequences[user_id].append({
-            "filename": file_name,
-            "msg_id": message.id,
-            "chat_id": message.chat.id
-        })
+    if user_id not in user_sequences:
+        return await message.reply_text("<blockquote>ᴜsᴇ /ssequence ғɪʀsᴛ!</blockquote>")
 
-        await message.reply_text("<blockquote>ғɪʟᴇ ᴀᴅᴅᴇᴅ! ᴜsᴇ /ᴇsᴇǫᴜᴇɴᴄᴇ ᴛᴏ enᴅ.<blockquote>")
-    else:
-        await message.reply_text("<blockquote>sᴛᴀʀᴛ sᴇǫᴜᴇɴᴄᴇ ᴡɪᴛʜ /ssequence ғɪʀsᴛ.<blockquote>")
+    file_name = (
+        message.document.file_name if message.document else
+        message.video.file_name if message.video else
+        message.audio.file_name if message.audio else "Unknown"
+    )
 
-# ----------------------- LEADERBOARD -----------------------
-@app.on_message(filters.command("leaderboard"))
-async def leaderboard(client, message):
-    top_users = users_collection.find().sort("files_sequenced", -1).limit(5)
-    leaderboard_text = "<blockquote>🏆 ᴛᴏᴘ ᴜsᴇʀs\n\n</blockquote>"
+    user_sequences[user_id].append({
+        "filename": file_name,
+        "msg_id": message.id,
+        "chat_id": message.chat.id
+    })
 
-    found = False
-    for index, user in enumerate(top_users, start=1):
-        found = True
-        leaderboard_text += f"**{index}. {user['username']}** - {user['files_sequenced']} files\n"
+    await message.reply_text("<blockquote>ғɪʟᴇ ᴀᴅᴅᴇᴅ ✔️</blockquote>")
 
-    if not found:
-        leaderboard_text = "No data available!"
-
-    await message.reply_text(leaderboard_text)
-
-# ----------------------- BROADCAST -----------------------
-@app.on_message(filters.command("broadcast") & filters.user(OWNER_ID))
-async def broadcast(client, message):
-    if len(message.command) < 2:
-        await message.reply_text("<blockquote>ᴜsᴀɢᴇ: `/broadcast your message`</blockquote>")
-        return
-
-    text = message.text.split(" ", 1)[1]
-    users = users_collection.find({}, {"user_id": 1})
-
-    count = 0
-    for user in users:
-        try:
-            await client.send_message(user["user_id"], text)
-            count += 1
-        except:
-            pass
-
-    await message.reply_text(f"✅ Broadcast sent to {count} users.")
-
-# ----------------------- USERS -----------------------
-@app.on_message(filters.command("users") & filters.user(OWNER_ID))
-async def get_users(client, message):
-    count = users_collection.count_documents({})
-    await message.reply_text(f"<blockquote>📊 ᴛᴏᴛᴀʟ ᴜsᴇʀs: {count}</blockquote>")
-
-# ----------------------- CALLBACK -----------------------
+# ----------------------- CALLBACKS -----------------------
 @app.on_callback_query()
 async def cb_handler(client, query: CallbackQuery):
-    await query.answer()  # acknowledge the callback
+    await query.answer()
     data = query.data
 
     if data == "help":
         await query.message.edit_text(
-            text=HELP_TXT.format(first=query.from_user.first_name),
+            HELP_TXT.format(first=query.from_user.first_name),
             reply_markup=InlineKeyboardMarkup([
-                [
-                    InlineKeyboardButton("ʙᴀᴄᴋ", callback_data='start'),
-                    InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data='close')
-                ]
+                [InlineKeyboardButton("Back", callback_data="start"),
+                 InlineKeyboardButton("Close", callback_data="close")]
             ])
         )
 
     elif data == "start":
         await query.message.edit_text(
-            text=START_MSG.format(first=query.from_user.first_name),
+            START_MSG.format(first=query.from_user.first_name),
             reply_markup=InlineKeyboardMarkup([
-                [
-                    InlineKeyboardButton("ʜᴇʟᴘ", callback_data='help'),
-                    InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data='close')
-                ],
+                [InlineKeyboardButton("Help", callback_data='help'),
+                 InlineKeyboardButton("Close", callback_data='close')],
                 [InlineKeyboardButton("ʙᴏᴛsᴋɪɴɢᴅᴏᴍs", url='https://t.me/BOTSKINGDOMS')]
             ])
         )
 
     elif data == "close":
         await query.message.delete()
-        try:
-            await query.message.reply_to_message.delete()
-        except:
-            pass
-app.run()
-
-import webserver  # important: starts Flask server<blockquote>
 
 
+# ----------------------- START BOTH BOT + FLASK -----------------------
+def start():
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.start()
+    app.run()
 
+if __name__ == "__main__":
+    start()
